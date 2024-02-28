@@ -6,6 +6,7 @@ networks:
     
 volumes:
   db_volume:
+  rabbit_data:
 
 services:
   api:
@@ -15,13 +16,40 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - db
+      - rabbitmq
     restart: always
     ports:
       - 5020:8080
     environment: 
-     - ConnectionString=host=db;port=5432;database=linkdb;username=linkuser;password=linkuser
+      - ConnectionString=host=db;port=5432;database=linkdb;username=linkuser;password=linkpassword
+      - RPC__Rabbit__Host=rabbitmq
+      - RPC__Rabbit__Port=5672
+      - RPC__Rabbit__UserName=rmquser
+      - RPC__Rabbit__UserPass=rabbitpass
+      - RPC__Rabbit__Retriescount=5
+      - RPC__Rabbit__ResponseTimeout=3000
+      - RPC__LinksQueue=links
     networks:
       - api-dev
+
+  urls_processor:
+    container_name: urls_processor
+    build:
+      context: Links.UrlProcessor
+      dockerfile: Dockerfile
+    networks:
+      - api-dev
+    restart: always
+    environment:
+      - RpcServer__Host=rabbitmq
+      - RpcServer__Port=5672
+      - RpcServer__UserName=rmquser
+      - RpcServer__UserPass=rabbitpass
+      - RpcServer__QueueName=links
+      - RpcServer__Retriescount=5
+      - RpcServer__ResponseTimeout=3000
+    depends_on:
+      - rabbitmq
 
   db:
     image: postgres:latest
@@ -33,7 +61,22 @@ services:
      - db_volume:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=linkuser
-      - POSTGRES_PASSWORD=linkuser
+      - POSTGRES_PASSWORD=linkpassword
       - SQL_DATABASE=linkdb
     networks:
       - api-dev
+  
+  rabbitmq:
+    image: rabbitmq:3.7.3-management
+    container_name: rabbitmq
+    networks:
+      - api-dev
+    environment:
+      - RABBITMQ_USERNAME=rmquser
+      - RABBITMQ_PASSWORD=rabbitpass
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
