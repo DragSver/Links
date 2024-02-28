@@ -1,3 +1,7 @@
+using Links.BL;
+using Links.DataAccess;
+using MediatR;
+using System.Reflection;
 
 namespace Links.API;
 
@@ -13,6 +17,11 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.SetUpDatabase(builder.Configuration);
+
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        builder.Services.AddMediatR(typeof(GetLinkRequest).GetTypeInfo().Assembly);
 
         var app = builder.Build();
 
