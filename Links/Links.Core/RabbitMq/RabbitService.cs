@@ -8,21 +8,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Links.Domain.ConfigureOptions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace Links.Core.RabbitMq;
 
 public class RabbitService : IRabbitService
 {
-    private readonly string TAG = "rabbitmq service: ";
-
-    //public RabbitConfiguration Config = new RabbitConfiguration();
     private readonly RpcOptions _rpcOptions;
+    private readonly ILogger<RabbitService> _logger;
 
-    private IConnection _connection;
-    private IModel _channel;
+    private readonly IConnection _connection;
+    private readonly IModel _channel;
 
-    public RabbitService(IOptions<RpcOptions> rpcOptions)
+    public RabbitService(IOptions<RpcOptions> rpcOptions, ILogger<RabbitService> logger)
     {
+        _logger = logger;
         _rpcOptions = rpcOptions.Value;
         _connection = new ConnectionFactory()
         {
@@ -37,7 +37,7 @@ public class RabbitService : IRabbitService
 
     public void StartConnection(params string[] queues)
     {
-        Console.WriteLine($"{TAG}starting connection on {_rpcOptions.Host}:{_rpcOptions.Port} ...");
+        _logger.LogInformation($"Starting connection on {_rpcOptions.Host}:{_rpcOptions.Port} ...");
 
         for (int i = 1; i < _rpcOptions.RetryCount; i++)
         {
@@ -46,36 +46,27 @@ public class RabbitService : IRabbitService
                 Connect(queues);
                 return;
             }
-            catch (BrokerUnreachableException)
+            catch (BrokerUnreachableException ex)
             {
-                Console.WriteLine($"{TAG}connection failed. Trying again after {_rpcOptions.ResponseTimeout} ms...");
+                _logger.LogError($"Connection failed. Trying again after {_rpcOptions.ResponseTimeout} ms...", ex);
                 Thread.Sleep(_rpcOptions.ResponseTimeout);
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{TAG}unhandled exception - {e.Message}");
+                _logger.LogError($"Unhandled exception - {e.Message}", e);
                 break;
             }
         }
-        Console.WriteLine($"{TAG}connecting to rabbitmq failed, shutting down...");
+
+        _logger.LogError($"Connecting to rabbitmq failed, shutting down...");
         Environment.Exit(1);
     }
 
     private void Connect(params string[] queues)
     {
-        //_connection = new ConnectionFactory()
-        //{
-        //    HostName = _rpcOptions.Host,
-        //    Port = _rpcOptions.Port,
-        //    UserName = _rpcOptions.UserName,
-        //    Password = _rpcOptions.UserPass
-        //}.CreateConnection();
-
-        //_channel = _connection.CreateModel();
-
         foreach (string q in queues)
         {
-            Console.WriteLine($"{TAG} useing queue: {q}");
+            _logger.LogInformation($"Using queue: {q}");
             _channel.QueueDeclare(queue: q,
                                 durable: false,
                                 exclusive: false,
@@ -85,7 +76,7 @@ public class RabbitService : IRabbitService
 
         _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
-        Console.WriteLine($"{TAG}connected succesfully");
+        _logger.LogInformation($"Connected succesfully");
     }
 
     public void Publish(string queue, string message)
@@ -111,7 +102,7 @@ public class RabbitService : IRabbitService
                              autoAck: true,
                              consumer: consumer);
 
-        Console.WriteLine($"{TAG}consumer attached");
+        _logger.LogInformation($"Consumer attached");
     }
 
     public void EndConnection()

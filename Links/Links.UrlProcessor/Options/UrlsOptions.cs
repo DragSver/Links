@@ -1,4 +1,4 @@
-﻿namespace Links.UrlProcessor;
+﻿namespace Links.UrlProcessor.Options;
 
 public class UrlsOptions
 {

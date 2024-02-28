@@ -1,6 +1,6 @@
 using Links.Core.Models;
 using Links.Core.RabbitMq;
-using Links.UrlProcessor.Services;
+using Links.UrlProcessor.Interfaces;
 using System.Text.Json;
 
 namespace Links.UrlProcessor
@@ -9,13 +9,13 @@ namespace Links.UrlProcessor
     {
         private readonly ILogger<Worker> _logger;
         private readonly IRabbitService _rabbitMq;
-        private readonly IUrlService _urlService;
+        private readonly ILinkService _linkService;
 
-        public Worker(ILogger<Worker> logger, IRabbitService rabbitService, IUrlService urlService)
+        public Worker(ILogger<Worker> logger, IRabbitService rabbitService, ILinkService urlService)
         {
             _logger = logger;
             _rabbitMq = rabbitService;
-            _urlService = urlService;
+            _linkService = urlService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -40,7 +40,7 @@ namespace Links.UrlProcessor
             switch (message.Action)
             {
                 case MessageAction.UpdateLinkStatus: 
-                    _urlService.UpdateUrlStatus(message.Model);
+                    _linkService.UpdateUrlStatus(message.Model);
                     break;
 
                 default: throw new NotImplementedException();

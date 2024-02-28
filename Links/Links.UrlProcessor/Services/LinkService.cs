@@ -1,39 +1,41 @@
 ﻿using Links.Domain.Models;
+using Links.UrlProcessor.Interfaces;
+using Links.UrlProcessor.Options;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Text;
 
 namespace Links.UrlProcessor.Services;
 
-public class UrlService : IUrlService
+public class LinkService : ILinkService
 {
     private readonly IHttpClientFactory _clientFactory;
     private readonly UrlsOptions _urlsOptions;
-    private readonly ILogger<UrlService> _logger;
+    private readonly IStatusCodeService _statusCodeService;
+    private readonly ILogger<LinkService> _logger;
 
-    public UrlService(IHttpClientFactory clientFactory, 
-        IOptions<UrlsOptions> urlsOptions,
-        ILogger<UrlService> logger)
+    public LinkService(IHttpClientFactory clientFactory,        
+        IStatusCodeService statusCodeService,
+        ILogger<LinkService> logger,
+        IOptions<UrlsOptions> urlsOptions)
     {
         _clientFactory = clientFactory;
-        _urlsOptions = urlsOptions.Value;
+        _statusCodeService = statusCodeService;
         _logger = logger;
+        _urlsOptions = urlsOptions.Value; 
     }
 
     public async Task UpdateUrlStatus(LinkModel linkModel)
     {
         var client = _clientFactory.CreateClient();
 
-        var linkRequest = new HttpRequestMessage(
-            HttpMethod.Get,
-            linkModel.Url);
-
         try
         {
-            var response = await client.SendAsync(linkRequest);
-            var statusCode = (int)response.StatusCode;
+            var statusCode = await _statusCodeService.GetStatusCode(linkModel.Url);
 
-            var model = new UpdateStatusModel(statusCode);
+            if (statusCode == null) return;
+
+            var model = new UpdateStatusModel(statusCode.Value);
 
             var content = new StringContent(
                 JsonConvert.SerializeObject(model),

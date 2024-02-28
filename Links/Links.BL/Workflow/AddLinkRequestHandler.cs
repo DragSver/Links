@@ -31,7 +31,7 @@ public class AddLinkRequestHandler : IRequestHandler<AddLinkRequest, Guid?>
             await _appDbContext.AddAsync(entity, cancellationToken);
             await _appDbContext.SaveChangesAsync();
 
-            await _linksService.UpdateLinkStatus(new LinkModel { Id = entity.Id, Url = entity.Url });
+            _linksService.UpdateLinkStatus(new LinkModel { Id = entity.Id, Url = entity.Url });
 
             return entity.Id;
         }

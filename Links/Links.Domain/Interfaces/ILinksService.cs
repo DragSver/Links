@@ -4,5 +4,5 @@ namespace Links.Domain.Interfaces;
 
 public interface ILinksService
 {
-    public Task UpdateLinkStatus(LinkModel linkModel);
+    public void UpdateLinkStatus(LinkModel linkModel);
 }

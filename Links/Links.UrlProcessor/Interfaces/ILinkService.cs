@@ -1,8 +1,8 @@
 ﻿using Links.Domain.Models;
 
-namespace Links.UrlProcessor.Services;
+namespace Links.UrlProcessor.Interfaces;
 
-public interface IUrlService
+public interface ILinkService
 {
     public Task UpdateUrlStatus(LinkModel linkModel);
 }

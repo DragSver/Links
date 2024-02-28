@@ -1,7 +1,9 @@
 ﻿using Links.Core.Models;
 using Links.Core.RabbitMq;
+using Links.Domain.ConfigureOptions;
 using Links.Domain.Interfaces;
 using Links.Domain.Models;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace Links.BL.Services;
@@ -9,17 +11,18 @@ namespace Links.BL.Services;
 public class LinksService : ILinksService
 {
     private readonly IRabbitService _rabbitService;
+    private readonly QueueOptions _queueOptions;
 
-    public LinksService(IRabbitService rabbitService)
+    public LinksService(IRabbitService rabbitService,
+        IOptions<QueueOptions> queueOptions)
     {
         _rabbitService = rabbitService;
+        _queueOptions = queueOptions.Value;
     }
 
-    public Task UpdateLinkStatus(LinkModel linkModel)
+    public void UpdateLinkStatus(LinkModel linkModel)
     {
-        _rabbitService.Publish("links", 
+        _rabbitService.Publish(_queueOptions.LinksQueue,
             JsonSerializer.Serialize(new LinkMessage(MessageAction.UpdateLinkStatus, linkModel)));
-
-        return Task.CompletedTask;
     }
 }

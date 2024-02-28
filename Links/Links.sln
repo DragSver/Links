@@ -13,9 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Links.BL", "Links.BL\Links.
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{745FAAB1-156F-42C7-A7F8-24D6F20147C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Links.Core", "Links.Core\Links.Core.csproj", "{671E23A4-E3B5-426D-889A-F44BEB74C8EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Links.Core", "Links.Core\Links.Core.csproj", "{671E23A4-E3B5-426D-889A-F44BEB74C8EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Links.UrlProcessor", "Links.UrlProcessor\Links.UrlProcessor.csproj", "{C3329F22-2D9F-4936-A067-440383352E2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Links.UrlProcessor", "Links.UrlProcessor\Links.UrlProcessor.csproj", "{C3329F22-2D9F-4936-A067-440383352E2A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nginx", "nginx", "{8A7245A6-B215-4EB9-A34A-ADB71843E842}"
 	ProjectSection(SolutionItems) = preProject
