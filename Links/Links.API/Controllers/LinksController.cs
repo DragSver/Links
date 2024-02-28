@@ -1,4 +1,4 @@
-﻿using Links.BL;
+﻿using Links.BL.Workflow;
 using Links.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +19,7 @@ public class LinksController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<string>> Get(Guid id)
+    public async Task<ActionResult<LinkStatusModel>> Get(Guid id)
     {
         var link = await _mediator.Send(new GetLinkRequest { Id = id });
 
@@ -32,5 +32,19 @@ public class LinksController : ControllerBase
         var id = await _mediator.Send(new AddLinkRequest { Url = model.Url });
 
         return id is not null ? Ok(id) : NotFound();
+    }
+
+    [HttpPut("{id:guid}/Status")]
+    public async Task<ActionResult<bool>> UpdateStatus(Guid id, [FromBody] UpdateStatusModel statusCode)
+    {
+        var request = new UpdateLinkStatusRequest
+        {
+            Id = id,
+            StatusCode = statusCode.StatusCode
+        };
+
+        var isUpdated = await _mediator.Send(request);
+
+        return Ok(isUpdated);
     }
 }
